@@ -25,8 +25,26 @@ public class Wallet {
     @Column(nullable = false)
     private BigDecimal balance;
 
+    @Column(nullable = false)
+     private Boolean isActive;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    @Column(name = "max_transactions_per_day")
+    private Integer maxTransactionsPerDay;
+
+    public BigDecimal getMaxBalance() {
+        return BigDecimal.valueOf(10000);
+    }
+
+    public Integer getMaxTransactionsPerDay() {
+        return maxTransactionsPerDay;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
 }
 
