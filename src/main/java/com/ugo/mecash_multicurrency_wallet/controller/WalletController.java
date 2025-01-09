@@ -5,6 +5,7 @@ import com.ugo.mecash_multicurrency_wallet.dto.response.WalletResponse;
 import com.ugo.mecash_multicurrency_wallet.service.WalletService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -30,8 +31,8 @@ public class WalletController {
     }
 
     @GetMapping("/balance")
-    public ResponseEntity<WalletResponse> getBalance(@ModelAttribute WalletRequest walletRequest) {
-        return ResponseEntity.ok(walletService.getBalance(walletRequest));
+    public ResponseEntity<WalletResponse> getBalance(@ModelAttribute WalletRequest walletRequest, Authentication authentication) {
+        return ResponseEntity.ok(walletService.getBalance(walletRequest, authentication));
     }
 }
 

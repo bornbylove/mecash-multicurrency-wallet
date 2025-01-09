@@ -13,6 +13,7 @@ import com.ugo.mecash_multicurrency_wallet.service.WalletService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -267,7 +268,58 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
-    public WalletResponse getBalance(WalletRequest walletRequest) {
-        return null;
+    public WalletResponse getBalance(WalletRequest walletRequest, Authentication authentication) {
+        WalletResponse walletResponse = new WalletResponse();
+
+        try {
+            /////////////////////////////////// Validate input parameters
+            if (walletRequest.getUserId() == null || walletRequest.getCurrencyCode() == null) {
+                log.error("Invalid input parameters for balance retrieval.");
+                walletResponse.setResponseMessage(ResponseMessage.INVALID_INPUT_PARAMETER.getStatusCode());
+                return walletResponse;
+            }
+
+            ///////////////////////////////////////// Fetch user's wallet by userId and currency code
+            Optional<Wallet> walletOptional = walletRepository.findByIdUserIdAndCurrencyCode(walletRequest.getUserId(), walletRequest.getCurrencyCode());
+            if (walletOptional.isEmpty()) {
+                log.error("Wallet not found for userId: {} and currencyCode: {}", walletRequest.getUserId(), walletRequest.getCurrencyCode());
+                walletResponse.setResponseMessage(ResponseMessage.USER_WALLET_NOT_FOUND.getStatusCode());
+                return walletResponse;
+            }
+
+            Wallet userWallet = walletOptional.get();
+
+            //////////////////////////////////////// Validate if wallet is active
+            if (!userWallet.isActive()) {
+                log.error("Wallet is not active for userId: {} and currencyCode: {}", walletRequest.getUserId(), walletRequest.getCurrencyCode());
+                walletResponse.setResponseMessage(ResponseMessage.WALLET_IS_NOT_ACTIVE.getStatusCode());
+                return walletResponse;
+            }
+
+            /////////////////////////////////////// Validate ownership or authorization
+            String currentUsername = authentication.getName();
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(authority -> authority.getAuthority().equals("ADMIN"));
+
+            if (!userWallet.getOwner().getUsername().equals(currentUsername) && !isAdmin) {
+                log.error("Access denied for user: {}. Attempted to access wallet for userId: {}", currentUsername, walletRequest.getUserId());
+                walletResponse.setResponseMessage(ResponseMessage.ACCESS_DENIED.getStatusCode());
+                return walletResponse;
+            }
+
+            //////////////////////////////////// Populate the response
+            walletResponse.setResponseMessage(ResponseMessage.SUCCESS.getStatusCode());
+            walletResponse.setBalance(userWallet.getBalance());
+            walletResponse.setCurrencyCode(userWallet.getCurrencyCode());
+            walletResponse.setUserId(userWallet.getOwner().getId());
+            log.info("Balance retrieved successfully for userId: {}", walletRequest.getUserId());
+
+        } catch (Exception ex) {
+            log.error("Error occurred while retrieving balance: ", ex);
+            walletResponse.setResponseMessage(ResponseMessage.INTERNAL_ERROR.getStatusCode());
+        }
+
+        return walletResponse;
     }
+
 }

@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface WalletRepository extends JpaRepository<Wallet, Long> {
     Optional<Wallet> findByWalletId(Long userId);
 
-    @Query("SELECT COUNT(t) FROM Transaction t WHERE t.wallet.id = :walletId AND DATE(t.timestamp) = CURRENT_DATE")
+    @Query("SELECT COUNT(t) FROM Transaction t WHERE t.wallet.id = :walletId AND DATE(t.transactionDate) = CURRENT_DATE")
     Integer countTransactionsForToday(@Param("walletId") Long walletId);
 
 
@@ -23,6 +23,9 @@ public interface WalletRepository extends JpaRepository<Wallet, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT w FROM Wallet w WHERE w.id = :userId AND w.currencyCode = :currencyCode")
     Optional<Wallet> findByIdWithLock(@Param("userId") Long userId, @Param("currencyCode") String currencyCode);
+
+    @Query("SELECT w FROM Wallet w WHERE w.owner.id = :userId AND w.currencyCode = :currencyCode")
+    Optional<Wallet> findByIdUserIdAndCurrencyCode(@Param("userId") Long userId, @Param("currencyCode") String currencyCode);
 
 }
 
