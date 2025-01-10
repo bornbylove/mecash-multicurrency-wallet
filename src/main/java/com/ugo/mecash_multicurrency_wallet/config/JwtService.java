@@ -1,5 +1,11 @@
 package com.ugo.mecash_multicurrency_wallet.config;
 
+import com.ugo.mecash_multicurrency_wallet.service.UserDetailsImp;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,7 +68,7 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", userDetailsImp.getUser().getId());
         claims.put("email", userDetailsImp.getUser().getEmail());
-        claims.put("username", userDetailsImp.getUser().getUsername());
+        claims.put("username", userDetailsImp.getUser().getUserName());
         claims.put("authorities", userDetailsImp.getAuthorities());
         claims.put("firstName", userDetailsImp.getUser().getFirstName());
         claims.put("lastName", userDetailsImp.getUser().getLastName());
@@ -178,7 +184,7 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", userDetailsImp.getUser().getId());
         claims.put("email", userDetailsImp.getUser().getEmail());
-        claims.put("username", userDetailsImp.getUser().getUsername());
+        claims.put("username", userDetailsImp.getUser().getUserName());
         claims.put("authorities", userDetailsImp.getAuthorities());
         claims.put("firstName", userDetailsImp.getUser().getFirstName());
         claims.put("lastName", userDetailsImp.getUser().getLastName());
