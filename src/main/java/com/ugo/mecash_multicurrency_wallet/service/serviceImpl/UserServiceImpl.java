@@ -55,13 +55,13 @@ public class UserServiceImpl implements UserService {
         try {
             ////////////////////////////////// Check if a user with the provided email already exists
             if (userRepository.findUserByEmail(userRequest.getEmail())) {
-                response.setMessage("A user with this email already exists.");
+                response.setMessage(ResponseMessage.EMAIL_ALREADY_EXIST.getStatusCode());
                 return response;
             }
 
             ////////////////////////////////// Check if a user with the provided username already exists
             if (userRepository.findByUserName(userRequest.getUserName())) {
-                response.setMessage("A user with this username already exists.");
+                response.setMessage(ResponseMessage.USERNAME_ALREADY_EXIST.getStatusCode());
                 return response;
             }
 
