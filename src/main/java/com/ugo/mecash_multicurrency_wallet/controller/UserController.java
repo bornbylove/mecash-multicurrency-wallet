@@ -1,8 +1,10 @@
 package com.ugo.mecash_multicurrency_wallet.controller;
 
 import com.ugo.mecash_multicurrency_wallet.dto.request.UserRequest;
+import com.ugo.mecash_multicurrency_wallet.dto.response.LoginResponse;
 import com.ugo.mecash_multicurrency_wallet.dto.response.UserResponse;
 import com.ugo.mecash_multicurrency_wallet.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,8 +23,8 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@RequestBody UserRequest request) {
-        return ResponseEntity.ok(userService.loginUser(request));
+    public ResponseEntity<LoginResponse> login(@RequestBody UserRequest request, HttpServletResponse httpServletResponse) {
+        return ResponseEntity.ok(userService.loginUser(request, httpServletResponse));
     }
 }
 
