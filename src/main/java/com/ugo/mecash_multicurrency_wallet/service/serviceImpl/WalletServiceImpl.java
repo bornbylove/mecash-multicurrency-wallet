@@ -1,7 +1,6 @@
 package com.ugo.mecash_multicurrency_wallet.service.serviceImpl;
 
 import com.ugo.mecash_multicurrency_wallet.dto.request.WalletRequest;
-import com.ugo.mecash_multicurrency_wallet.dto.response.TransactionResponse;
 import com.ugo.mecash_multicurrency_wallet.dto.response.WalletResponse;
 import com.ugo.mecash_multicurrency_wallet.entity.Transaction;
 import com.ugo.mecash_multicurrency_wallet.entity.Wallet;
@@ -124,7 +123,7 @@ public class WalletServiceImpl implements WalletService {
 
         } catch (Exception e) {
             log.error("Error occurred while depositing money: ", e);
-            walletResponse.setResponseMessage(ResponseMessage.INTERNAL_ERROR.getStatusCode());
+            walletResponse.setResponseMessage(ResponseMessage.INTERNAL_SERVER_ERROR.getStatusCode());
         }
 
         return walletResponse;
@@ -197,7 +196,7 @@ public class WalletServiceImpl implements WalletService {
 
         } catch (Exception ex) {
             log.error("Error occurred while withdrawing money: ", ex);
-            walletResponse.setResponseMessage(ResponseMessage.INTERNAL_ERROR.getStatusCode());
+            walletResponse.setResponseMessage(ResponseMessage.INTERNAL_SERVER_ERROR.getStatusCode());
         }
 
         return walletResponse;
@@ -289,7 +288,7 @@ public class WalletServiceImpl implements WalletService {
 
         } catch (Exception ex) {
             log.error("Error occurred during money transfer: ", ex);
-            walletResponse.setResponseMessage(ResponseMessage.INTERNAL_ERROR.getStatusCode());
+            walletResponse.setResponseMessage(ResponseMessage.INTERNAL_SERVER_ERROR.getStatusCode());
         }
 
         return walletResponse;
@@ -361,7 +360,7 @@ public class WalletServiceImpl implements WalletService {
 
         } catch (Exception ex) {
             log.error("Error occurred while retrieving balance: ", ex);
-            walletResponse.setResponseMessage(ResponseMessage.INTERNAL_ERROR.getStatusCode());
+            walletResponse.setResponseMessage(ResponseMessage.INTERNAL_SERVER_ERROR.getStatusCode());
         }
 
         return walletResponse;

@@ -1,12 +1,13 @@
 package com.ugo.mecash_multicurrency_wallet.dto.response;
 
 import lombok.*;
+import org.springframework.stereotype.Component;
 
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Builder
+@Component
 public class LoginResponse {
     private String accessToken;
     private String refreshToken;

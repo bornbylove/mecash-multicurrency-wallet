@@ -1,5 +1,6 @@
 package com.ugo.mecash_multicurrency_wallet.controller;
 
+import com.ugo.mecash_multicurrency_wallet.dto.request.RefToken;
 import com.ugo.mecash_multicurrency_wallet.dto.request.UserRequest;
 import com.ugo.mecash_multicurrency_wallet.dto.response.LoginResponse;
 import com.ugo.mecash_multicurrency_wallet.dto.response.UserResponse;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
     @Autowired
     private UserService userService;
+
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@RequestBody UserRequest request) {
         return ResponseEntity.ok(userService.registerUser(request));
@@ -26,5 +28,11 @@ public class UserController {
     public ResponseEntity<LoginResponse> login(@RequestBody UserRequest request, HttpServletResponse httpServletResponse) {
         return ResponseEntity.ok(userService.loginUser(request, httpServletResponse));
     }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<LoginResponse> getAccessToken(@RequestBody RefToken refToken) {
+        return null;
+    }
+
 }
 

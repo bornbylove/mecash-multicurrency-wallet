@@ -18,7 +18,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -112,7 +111,7 @@ public class TransactionServiceImpl implements TransactionService {
         } catch (Exception ex) {
             log.error("Unexpected error occurred: ", ex);
             TransactionResponse errorResponse = new TransactionResponse();
-            errorResponse.setResponseMessage(ResponseMessage.INTERNAL_ERROR.getStatusCode());
+            errorResponse.setResponseMessage(ResponseMessage.INTERNAL_SERVER_ERROR.getStatusCode());
             transactionResponses.add(errorResponse);
         }
 
