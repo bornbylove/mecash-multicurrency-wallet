@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -63,7 +64,6 @@ public class WalletServiceImpl implements WalletService {
     @Transactional
     public WalletResponse depositMoney(WalletRequest walletRequest) {
 
-
         try {
             ///////////////////////////////////////////// Validate input parameters
             if (walletRequest.getUserId() == null || walletRequest.getCurrencyCode() == null ||
@@ -100,13 +100,27 @@ public class WalletServiceImpl implements WalletService {
                 }
             }
 
+            ///////////////////////////////// Generate transaction reference
+            String transactionReference = UUID.randomUUID().toString();
+
             ///////////////////////////////// Perform the deposit
             wallet.setBalance(wallet.getBalance().add(walletRequest.getAmount()));
             walletRepository.save(wallet);
 
+            ///////////////////////////////// Save transaction details
+            Transaction transaction = new Transaction();
+            transaction.setTransactionReference(transactionReference);
+            transaction.setWallet(wallet);
+            transaction.setAmount(walletRequest.getAmount());
+            transaction.setCurrencyCode(walletRequest.getCurrencyCode());
+            transaction.setType("DEPOSIT");
+            transaction.setTransactionDate(LocalDateTime.now());
+            transactionRepository.save(transaction);
+
             ///////////////////////////////// Set successful response
             walletResponse.setResponseMessage(ResponseMessage.SUCCESS.getStatusCode());
             walletResponse.setBalance(wallet.getBalance());
+            walletResponse.setTransactionReference(transactionReference);
 
         } catch (Exception e) {
             log.error("Error occurred while depositing money: ", e);
@@ -116,7 +130,9 @@ public class WalletServiceImpl implements WalletService {
         return walletResponse;
     }
 
+
     @Override
+    @Transactional
     public WalletResponse withdrawMoney(WalletRequest walletRequest) {
         WalletResponse walletResponse = new WalletResponse();
 
@@ -153,11 +169,15 @@ public class WalletServiceImpl implements WalletService {
                 return walletResponse;
             }
 
+            ///////////////////////////////// Generate transaction reference
+            String transactionReference = UUID.randomUUID().toString();
+
             //////////////////////////////// Perform the withdrawal by deducting the amount from the wallet balance
             wallet.setBalance(wallet.getBalance().subtract(walletRequest.getAmount()));
 
             /////////////////////////////// Create a new transaction for the withdrawal
             Transaction transaction = new Transaction();
+            transaction.setTransactionReference(transactionReference);
             transaction.setWallet(wallet);
             transaction.setType(String.valueOf(TransactionType.WITHDRAWAL));
             transaction.setAmount(walletRequest.getAmount());
@@ -173,6 +193,7 @@ public class WalletServiceImpl implements WalletService {
             //////////////////////////////////////// Set successful response
             walletResponse.setResponseMessage(ResponseMessage.SUCCESS.getStatusCode());
             walletResponse.setBalance(wallet.getBalance());
+            walletResponse.setTransactionReference(transactionReference);
 
         } catch (Exception ex) {
             log.error("Error occurred while withdrawing money: ", ex);
@@ -182,7 +203,9 @@ public class WalletServiceImpl implements WalletService {
         return walletResponse;
     }
 
+
     @Override
+    @Transactional
     public WalletResponse transferMoney(WalletRequest walletRequest) {
         WalletResponse walletResponse = new WalletResponse();
 
@@ -237,6 +260,9 @@ public class WalletServiceImpl implements WalletService {
                 return walletResponse;
             }
 
+            /////////////////////////////////////// Generate transaction reference
+            String transactionReference = UUID.randomUUID().toString();
+
             /////////////////////////////////////// Perform the transfer
             senderWallet.setBalance(senderWallet.getBalance().subtract(walletRequest.getAmount()));
             recipientWallet.setBalance(recipientWallet.getBalance().add(walletRequest.getAmount()));
@@ -247,6 +273,7 @@ public class WalletServiceImpl implements WalletService {
 
             ////////////////////////////////////////// Record the transaction
             Transaction transaction = new Transaction();
+            transaction.setTransactionReference(transactionReference);
             transaction.setWallet(senderWallet);
             transaction.setRecipientWallet(recipientWallet);
             transaction.setAmount(walletRequest.getAmount());
@@ -258,6 +285,7 @@ public class WalletServiceImpl implements WalletService {
             ////////////////////////////////// Set success response
             walletResponse.setResponseMessage(ResponseMessage.SUCCESS.getStatusCode());
             walletResponse.setBalance(senderWallet.getBalance());
+            walletResponse.setTransactionReference(transactionReference);
 
         } catch (Exception ex) {
             log.error("Error occurred during money transfer: ", ex);
@@ -267,7 +295,9 @@ public class WalletServiceImpl implements WalletService {
         return walletResponse;
     }
 
+
     @Override
+    @Transactional
     public WalletResponse getBalance(WalletRequest walletRequest, Authentication authentication) {
         WalletResponse walletResponse = new WalletResponse();
 
@@ -301,18 +331,33 @@ public class WalletServiceImpl implements WalletService {
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(authority -> authority.getAuthority().equals("ADMIN"));
 
-            if (!userWallet.getOwner().getUsername().equals(currentUsername) && !isAdmin) {
+            if (!userWallet.getUser().getUserName().equals(currentUsername) && !isAdmin) {
                 log.error("Access denied for user: {}. Attempted to access wallet for userId: {}", currentUsername, walletRequest.getUserId());
                 walletResponse.setResponseMessage(ResponseMessage.ACCESS_DENIED.getStatusCode());
                 return walletResponse;
             }
 
+            /////////////////////////////////////// Generate transaction reference
+            String transactionReference = UUID.randomUUID().toString();
+
+            /////////////////////////////////////// Save the transaction
+            Transaction transaction = new Transaction();
+            transaction.setTransactionReference(transactionReference);
+            transaction.setWallet(userWallet);
+            transaction.setAmount(BigDecimal.ZERO);
+            transaction.setCurrencyCode(userWallet.getCurrencyCode());
+            transaction.setType("BALANCE_CHECK");
+            transaction.setTransactionDate(LocalDateTime.now());
+            transactionRepository.save(transaction);
+
             //////////////////////////////////// Populate the response
             walletResponse.setResponseMessage(ResponseMessage.SUCCESS.getStatusCode());
             walletResponse.setBalance(userWallet.getBalance());
             walletResponse.setCurrencyCode(userWallet.getCurrencyCode());
-            walletResponse.setUserId(userWallet.getOwner().getId());
-            log.info("Balance retrieved successfully for userId: {}", walletRequest.getUserId());
+            walletResponse.setUser(userWallet.getUser());
+            walletResponse.setTransactionReference(transactionReference);
+
+            log.info("Balance retrieved successfully for userId: {} with transaction reference: {}", walletRequest.getUserId(), transactionReference);
 
         } catch (Exception ex) {
             log.error("Error occurred while retrieving balance: ", ex);
@@ -321,5 +366,6 @@ public class WalletServiceImpl implements WalletService {
 
         return walletResponse;
     }
+
 
 }

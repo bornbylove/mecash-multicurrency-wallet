@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Table(name = "User")
 @Entity
@@ -23,9 +24,14 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String fullName;
+    private String firstName;
 
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<Wallet> wallets = new ArrayList<>();
+    @Column(nullable = false)
+    private String lastName;
+    @Column(nullable = false)
+    private String userName;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Wallet> wallets = new ArrayList<>();
 }
 

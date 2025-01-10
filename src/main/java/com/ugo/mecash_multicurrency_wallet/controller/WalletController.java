@@ -15,24 +15,29 @@ import java.math.BigDecimal;
 public class WalletController {
     @Autowired
     private WalletService walletService;
-    @PostMapping("/deposit")
+    @PostMapping("/deposit/{userId}/{currencyCode}")
     public ResponseEntity<WalletResponse> deposit(@RequestBody WalletRequest walletRequest) {
-        return ResponseEntity.ok(walletService.depositMoney(walletRequest));
+        WalletResponse walletResponse = walletService.depositMoney(walletRequest);
+        return ResponseEntity.ok(walletResponse);
     }
 
-    @PostMapping("/withdraw")
+    @PostMapping("/withdraw/{userId}/{currencyCode}")
     public ResponseEntity<WalletResponse> withdraw(@RequestBody WalletRequest walletRequest) {
-        return ResponseEntity.ok(walletService.withdrawMoney(walletRequest));
+        WalletResponse walletResponse = walletService.withdrawMoney(walletRequest);
+        return ResponseEntity.ok(walletResponse);
     }
 
-    @PostMapping("/transfer")
+    @PostMapping("/transfer/{userId}/{currencyCode}")
     public ResponseEntity<WalletResponse> transfer(@RequestBody WalletRequest walletRequest) {
-        return ResponseEntity.ok(walletService.transferMoney(walletRequest));
+        WalletResponse walletResponse = walletService.transferMoney(walletRequest);
+        return ResponseEntity.ok(walletResponse);
     }
 
-    @GetMapping("/balance")
-    public ResponseEntity<WalletResponse> getBalance(@ModelAttribute WalletRequest walletRequest, Authentication authentication) {
-        return ResponseEntity.ok(walletService.getBalance(walletRequest, authentication));
+    @GetMapping("/balance/{userId}/{currencyCode}")
+    public ResponseEntity<WalletResponse> getBalance(
+            @ModelAttribute WalletRequest walletRequest, Authentication authentication) {
+        WalletResponse walletResponse = walletService.getBalance(walletRequest, authentication);
+        return ResponseEntity.ok(walletResponse);
     }
 }
 
