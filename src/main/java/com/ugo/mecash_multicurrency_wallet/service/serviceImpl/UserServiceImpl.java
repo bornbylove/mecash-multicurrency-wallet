@@ -5,6 +5,7 @@ import com.ugo.mecash_multicurrency_wallet.dto.request.RefToken;
 import com.ugo.mecash_multicurrency_wallet.dto.request.UserRequest;
 import com.ugo.mecash_multicurrency_wallet.dto.response.LoginResponse;
 import com.ugo.mecash_multicurrency_wallet.dto.response.UserResponse;
+import com.ugo.mecash_multicurrency_wallet.entity.Role;
 import com.ugo.mecash_multicurrency_wallet.entity.User;
 import com.ugo.mecash_multicurrency_wallet.enums.ResponseMessage;
 import com.ugo.mecash_multicurrency_wallet.repository.UserRepository;
@@ -38,6 +39,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
     private LoginResponse loginResponse;
+    @Autowired
+    private RoleRepository roleRepository;
 
 
     public UserServiceImpl(AuthenticationManager authenticationManager, LoginResponse loginResponse) {
@@ -46,9 +49,65 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse registerUser(UserRequest request) {
+    public UserResponse registerUser(UserRequest userRequest) {
+        UserResponse response = new UserResponse();
+
+        try {
+            ////////////////////////////////// Check if a user with the provided email already exists
+            if (userRepository.findUserByEmail(userRequest.getEmail())) {
+                response.setMessage("A user with this email already exists.");
+                return response;
+            }
+
+            ////////////////////////////////// Check if a user with the provided username already exists
+            if (userRepository.findByUserName(userRequest.getUserName())) {
+                response.setMessage("A user with this username already exists.");
+                return response;
+            }
+
+            ///////////////////////////////////// Create a new User object
+            User user = new User();
+            user.setFirstName(userRequest.getFirstName());
+            user.setLastName(userRequest.getLastName());
+            user.setUserName(userRequest.getUserName());
+            user.setEmail(userRequest.getEmail());
+
+            ///////////////////////////////////// Assign role to the user
+            String roleName = userRequest.getRole();
+            Role role = roleRepository.findByRoleName(roleName);
+            if (role == null) {
+                response.setMessage("Role with name \"" + roleName + "\" does not exist.");
+                return response;
+            }
+            user.setRole(role);
+
+            ///////////////////////////////////// Generate a default password for the user
+            String defaultPassword = generateRandomPassword(8);
+            user.setPassword(passwordEncoder.encode(defaultPassword));
+
+            ///////////////////////////////// Save the user
+            User savedUser = roleRepository.saveAndFlush(user);
+
+            //////////////////////////////////////////// Convert the saved user to a response DTO
+            response = convertToDTO(savedUser);
+
+        } catch (Exception e) {
+            log.error("Error during user registration: {}", e.getMessage(), e);
+            response.setMessage(ResponseMessage.REGISTRATION_ERROR.getStatusCode());
+        }
+
+        return response;
+    }
+
+
+    private UserResponse convertToDTO(User savedUser) {
         return null;
     }
+
+    private String generateRandomPassword(int i) {
+        return null;
+    }
+
 
     @Override
     public LoginResponse loginUser(UserRequest request, HttpServletResponse httpServletResponse) {
@@ -122,6 +181,7 @@ public class UserServiceImpl implements UserService {
         return refreshTokenCookie;
     }
 
+    @Override
     public Object getAccessTokenUsingRefreshToken(RefToken refToken) {
         try {
             String refreshToken = refToken.getRefreshToken();

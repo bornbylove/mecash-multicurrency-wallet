@@ -13,5 +13,6 @@ public class UserResponse {
     private String email;
     private String fullName;
     private List<WalletResponse> wallets;
+    private String message;
 }
 

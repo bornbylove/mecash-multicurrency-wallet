@@ -30,8 +30,8 @@ public class UserController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<LoginResponse> getAccessToken(@RequestBody RefToken refToken) {
-        return null;
+    public ResponseEntity<?> getAccessToken(@RequestBody RefToken refToken) {
+        return ResponseEntity.ok(userService.getAccessTokenUsingRefreshToken(refToken));
     }
 
 }
