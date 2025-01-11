@@ -16,20 +16,20 @@ public class WalletController {
     @Autowired
     private WalletService walletService;
     @PostMapping("/deposit/{userId}/{currencyCode}")
-    public ResponseEntity<WalletResponse> deposit(@RequestBody WalletRequest walletRequest) {
-        WalletResponse walletResponse = walletService.depositMoney(walletRequest);
+    public ResponseEntity<WalletResponse> deposit(@RequestBody WalletRequest walletRequest, Authentication authentication) {
+        WalletResponse walletResponse = walletService.depositMoney(walletRequest, authentication);
         return ResponseEntity.ok(walletResponse);
     }
 
     @PostMapping("/withdraw/{userId}/{currencyCode}")
-    public ResponseEntity<WalletResponse> withdraw(@RequestBody WalletRequest walletRequest) {
-        WalletResponse walletResponse = walletService.withdrawMoney(walletRequest);
+    public ResponseEntity<WalletResponse> withdraw(@RequestBody WalletRequest walletRequest, Authentication authentication) {
+        WalletResponse walletResponse = walletService.withdrawMoney(walletRequest, authentication);
         return ResponseEntity.ok(walletResponse);
     }
 
     @PostMapping("/transfer/{userId}/{currencyCode}")
-    public ResponseEntity<WalletResponse> transfer(@RequestBody WalletRequest walletRequest) {
-        WalletResponse walletResponse = walletService.transferMoney(walletRequest);
+    public ResponseEntity<WalletResponse> transfer(@RequestBody WalletRequest walletRequest, Authentication authentication) {
+        WalletResponse walletResponse = walletService.transferMoney(walletRequest, authentication);
         return ResponseEntity.ok(walletResponse);
     }
 

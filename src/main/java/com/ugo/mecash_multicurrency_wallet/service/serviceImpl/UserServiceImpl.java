@@ -8,6 +8,7 @@ import com.ugo.mecash_multicurrency_wallet.dto.response.UserResponse;
 import com.ugo.mecash_multicurrency_wallet.entity.Role;
 import com.ugo.mecash_multicurrency_wallet.entity.User;
 import com.ugo.mecash_multicurrency_wallet.enums.ResponseMessage;
+import com.ugo.mecash_multicurrency_wallet.repository.RoleRepository;
 import com.ugo.mecash_multicurrency_wallet.repository.UserRepository;
 import com.ugo.mecash_multicurrency_wallet.service.UserDetailsImp;
 import com.ugo.mecash_multicurrency_wallet.service.UserService;
@@ -72,7 +73,6 @@ public class UserServiceImpl implements UserService {
             user.setUserName(userRequest.getUserName());
             user.setEmail(userRequest.getEmail());
 
-            ///////////////////////////////////// Assign role to the user
             String roleName = userRequest.getRole();
             Role role = roleRepository.findByRoleName(roleName);
             if (role == null) {
@@ -85,8 +85,8 @@ public class UserServiceImpl implements UserService {
             String defaultPassword = generateRandomPassword(8);
             user.setPassword(passwordEncoder.encode(defaultPassword));
 
-            ///////////////////////////////// Save the user
-            User savedUser = roleRepository.saveAndFlush(user);
+            ///////////////////////////////// Save the user and flush at the same time
+            User savedUser = userRepository.saveAndFlush(user);
 
             //////////////////////////////////////////// Convert the saved user to a response DTO
             response = convertToDTO(savedUser);
@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
         } catch (InternalAuthenticationServiceException e) {
             log.error("Failed to load userDetails, Internal server error during authentication for user: {}", request.getEmail(), e);
             return LoginResponse.builder()
-                    .message(ResponseMessage.INTERNAL_SERVER_ERROR.getStatusCode())
+                    .message(ResponseMessage.INTERNAL_SERVER_ERROR_DUE_TO_AUTHENTICATION.getStatusCode())
                     .build();
         } catch (Exception e) {
             log.error("Unexpected error during authentication for user: {}", request.getEmail(), e);
@@ -188,7 +188,8 @@ public class UserServiceImpl implements UserService {
 
             log.info("Refresh Token: service(1) {}", refreshToken);
             if (refreshToken == null || refreshToken.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refresh token is missing or empty");
+                log.error("Refresh token is missing or empty");
+                LoginResponse.builder().message(ResponseMessage.BAD_REQUEST.getStatusCode());
             }
 
             log.info("Refresh token not null/empty: {}", refreshToken);
