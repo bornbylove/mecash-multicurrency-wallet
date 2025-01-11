@@ -32,6 +32,10 @@ public class JwtService {
         return extractAccessTokenClaim(token, Claims::getSubject);
     }
 
+    public String extractAccessTokenEmail(String token) {
+        return extractAccessTokenClaim(token, Claims::getSubject);
+    }
+
     public String extractRefreshTokenUsername(String token) {
         try {
             log.info("Attempting to extract username from refresh token: " + token);

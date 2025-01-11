@@ -32,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
-        log.info("=================================== request received by the seconda filter");
+        log.info("=================================== request received by the second filter");
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String email;
@@ -48,6 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             email = jwtService.extractAccessTokenUsername(jwt);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                log.info("Extracted email" + email);
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
 
                 if (jwtService.isAccessTokenValid(jwt, userDetails)) {
