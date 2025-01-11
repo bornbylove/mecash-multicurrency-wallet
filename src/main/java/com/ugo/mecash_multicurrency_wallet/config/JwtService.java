@@ -23,9 +23,9 @@ import java.util.function.Function;
 @Slf4j
 public class JwtService {
 
-    @Value("${grafana.jwt.access_token_secret_key}")
+    @Value("${mecash.jwt.access_token_secret_key}")
     private String SECRET_KEY; // = "51655468576D5A7134743777217A25432A462D4A614E635266556A586E327235";
-    @Value("${grafana.jwt.refresh_token_secret_key}")
+    @Value("${mecash.jwt.refresh_token_secret_key}")
     private String REFRESH_TOKEN_SECRET_KEY; // =
 
     public String extractAccessTokenUsername(String token) {
