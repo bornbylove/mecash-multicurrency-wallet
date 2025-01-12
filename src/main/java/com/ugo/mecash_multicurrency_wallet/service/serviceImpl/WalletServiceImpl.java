@@ -32,6 +32,7 @@ public class WalletServiceImpl implements WalletService {
     private WalletRepository walletRepository;
     @Autowired
     private TransactionRepository transactionRepository;
+    @Autowired
     private UserRepository userRepository;
     WalletResponse walletResponse = new WalletResponse();
   //  @Override
@@ -79,8 +80,9 @@ public class WalletServiceImpl implements WalletService {
             }
 
             ///////////////////////////////////// Fetch the authenticated user from the Authentication object
-            String userEmail = authentication.getName(); // Get the authenticated user's email
-            User user = userRepository.findByEmail(userEmail)
+            String userEmail = authentication.getName();
+            log.info("*********************************Deposit method logged authenticated username/email*********************************" + userEmail);
+            User user = userRepository.findByUserUAndUsername(userEmail)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
             ///////////////////////////////////// Fetch the wallet with a pessimistic lock for the authenticated user
@@ -134,8 +136,13 @@ public class WalletServiceImpl implements WalletService {
             transactionRepository.save(transaction);
 
             walletResponse.setResponseMessage(ResponseMessage.SUCCESS.getStatusCode());
+            walletResponse.setUserId(user.getId());
             walletResponse.setBalance(wallet.getBalance());
             walletResponse.setTransactionReference(transactionReference);
+            walletResponse.setCurrencyCode(wallet.getCurrencyCode());
+            walletResponse.setRecipientWalletId(walletRequest.getRecipientWalletId());
+            walletResponse.setResponseMessage(ResponseMessage.SUCCESS.getStatusCode());
+            walletResponse.setResponseCode(200);
 
         } catch (Exception e) {
             log.error("Error occurred while depositing money: ", e);
@@ -164,8 +171,10 @@ public class WalletServiceImpl implements WalletService {
             }
 
             String userEmail = authentication.getName();
-            User user = userRepository.findByEmail(userEmail)
+            log.info("*********************************Withdraw method logged authenticated username/email*********************************" + userEmail);
+            User user = userRepository.findByUserUAndUsername(userEmail)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
 
             //////////////////////////////////////////////////// Fetch the wallet with a pessimistic lock for the authenticated user
             Optional<Wallet> walletOptional = walletRepository.findByIdWithLock(user.getId(), walletRequest.getCurrencyCode());
@@ -216,6 +225,9 @@ public class WalletServiceImpl implements WalletService {
             walletResponse.setResponseMessage(ResponseMessage.SUCCESS.getStatusCode());
             walletResponse.setBalance(wallet.getBalance());
             walletResponse.setTransactionReference(transactionReference);
+            walletResponse.setUserId(user.getId());
+            walletResponse.setCurrencyCode(walletRequest.getCurrencyCode());
+            walletResponse.setResponseCode(200);
 
         } catch (Exception ex) {
             log.error("Error occurred while withdrawing money: ", ex);
@@ -244,7 +256,7 @@ public class WalletServiceImpl implements WalletService {
 
             ////////////////////////////////// Fetch sender's user ID
             String senderEmail = authentication.getName();
-            User sender = userRepository.findByEmail(senderEmail)
+            User sender = userRepository.findByUserUAndUsername(senderEmail)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
             // Fetch sender's wallet with a pessimistic lock
@@ -275,7 +287,7 @@ public class WalletServiceImpl implements WalletService {
             }
 
             //////////////////////////////////////////// Fetch recipient's wallet with a pessimistic lock
-            //////////////////////////////////////////// we can alternative call an api with the recipient wallet details
+            //////////////////////////////////////////// we can alternatively call an api with the recipient wallet details
             Optional<Wallet> recipientWalletOptional = walletRepository.findByIdWithLock(walletRequest.getRecipientWalletId(), walletRequest.getCurrencyCode());
             if (recipientWalletOptional.isEmpty()) {
                 log.error("Recipient's wallet not found for walletId: {}", walletRequest.getRecipientWalletId());
@@ -317,6 +329,10 @@ public class WalletServiceImpl implements WalletService {
             walletResponse.setResponseMessage(ResponseMessage.SUCCESS.getStatusCode());
             walletResponse.setBalance(senderWallet.getBalance());
             walletResponse.setTransactionReference(transactionReference);
+            walletResponse.setUserId(senderWallet.getId());
+            walletResponse.setCurrencyCode(walletRequest.getCurrencyCode());
+            walletResponse.setRecipientWalletId(recipientWallet.getId());
+            walletResponse.setResponseCode(200);
 
         } catch (Exception ex) {
             log.error("Error occurred during money transfer: ", ex);

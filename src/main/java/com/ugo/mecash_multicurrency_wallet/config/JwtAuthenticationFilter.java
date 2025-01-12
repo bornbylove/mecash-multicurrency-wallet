@@ -1,5 +1,6 @@
 package com.ugo.mecash_multicurrency_wallet.config;
 
+import com.ugo.mecash_multicurrency_wallet.service.UserDetailsImp;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -45,11 +46,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
 
         try {
-            email = jwtService.extractAccessTokenUsername(jwt);
+            email = jwtService.extractAccessTokenEmail(jwt);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 log.info("Extracted email" + email);
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
+                UserDetailsImp userDetails = (UserDetailsImp) this.userDetailsService.loadUserByUsername(email);
 
                 if (jwtService.isAccessTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

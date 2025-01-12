@@ -91,7 +91,16 @@ public class UserServiceImpl implements UserService {
             User savedUser = userRepository.saveAndFlush(user);
 
             //////////////////////////////////////////// Convert the saved user to a response DTO
-            response = convertToDTO(savedUser);
+         //   UserResponse response = new UserResponse();
+         //   response = convertToDTO(savedUser);
+
+            response.setId(savedUser.getId());
+            response.setEmail(savedUser.getEmail());
+            response.setUserName(savedUser.getUserName());
+            response.setFirstName(savedUser.getFirstName());
+            response.setLastName(savedUser.getLastName());
+            response.setRole(savedUser.getRole().getRoleName());
+            response.setMessage("User registered successfully");
 
         } catch (Exception e) {
             log.error("Error during user registration: {}", e.getMessage(), e);
@@ -209,10 +218,10 @@ public class UserServiceImpl implements UserService {
             }
 
             log.info("Refresh token not null/empty: {}", refreshToken);
-            String userName = jwtService.extractRefreshTokenUsername(refreshToken);
-            log.info("Extracted Refresh token username: {}", userName);
+            String email = jwtService.extractRefreshTokenEmail(refreshToken);
+            log.info("Extracted Refresh token username: {}", email);
 
-            User users = userRepository.findByEmail(userName)
+            User users = userRepository.findByEmail(email)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
             UserDetailsImp userDetails = new UserDetailsImp(users);

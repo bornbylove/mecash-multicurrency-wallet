@@ -56,6 +56,26 @@ public class JwtService {
         return null;
     }
 
+    public String extractRefreshTokenEmail(String token) {
+        try {
+            log.info("Attempting to extract username from refresh token: " + token);
+
+            String email = extractRefreshTokenClaim(token, Claims::getSubject);
+
+            if (email != null) {
+                log.info("Extracted Refresh token username: " + email);
+            } else {
+                log.warn("No username found in the token claims.");
+            }
+
+            return email;
+        } catch (Exception e) {
+            log.error("Exception encountered at extractRefreshTokenEmail method: " + e.getMessage(), e);
+        }
+
+        return null;
+    }
+
     private <T> T extractAccessTokenClaim(String token, Function<Claims, T> ClaimsResolver){
         final Claims claims = extractAllClaimsFromAccessToken(token);
         return ClaimsResolver.apply(claims);
@@ -86,18 +106,19 @@ public class JwtService {
     ){
         return Jwts
                 .builder()
-                .setIssuer("etz")
+                .setIssuer("ugo")
                 .setClaims(extractClaims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(userDetails.getUser().getUserName())
+                .setSubject(userDetails.getUser().getEmail())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public Boolean isAccessTokenValid(String token, UserDetails userDetails){
-        final String username  = extractAccessTokenUsername(token);
-        return (username.equals((userDetails.getUsername()))) && !isAccessTokenExpired(token);
+    public Boolean isAccessTokenValid(String token, UserDetailsImp userDetails){
+        final String email  = extractAccessTokenEmail(token);
+        return (email.equals((userDetails.getUser().getEmail()))) && !isAccessTokenExpired(token);
     }
 
     public Boolean isRefreshTokenValid(String token, UserDetails userDetails){
@@ -174,9 +195,10 @@ public class JwtService {
 
         return Jwts
                 .builder()
-                .setIssuer("etz")
+                .setIssuer("ugo")
                 .setClaims(claims)
-                .setSubject(userDetails.getUsername())
+                .setSubject(userDetails.getUser().getUserName())
+                .setSubject(userDetails.getUser().getEmail())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))
                 .signWith(getSignInKeyForRefreshToken(), SignatureAlgorithm.HS256)
